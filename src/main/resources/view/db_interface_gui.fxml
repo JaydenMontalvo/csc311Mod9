@@ -70,7 +70,11 @@
                 </VBox>
             </left>
             <bottom>
-                <HBox prefHeight="30.0" prefWidth="892.0" styleClass="admin_section" BorderPane.alignment="CENTER" />
+                <HBox prefHeight="30.0" prefWidth="892.0" styleClass="admin_section" BorderPane.alignment="CENTER">
+                    <children>
+                        <Label fx:id="statusLabel" style="-fx-text-fill: white; -fx-font-size: 13px; -fx-padding: 5 10 5 10;" text="" />
+                    </children>
+                </HBox>
             </bottom>
          <right>
                 <VBox prefHeight="540.0" prefWidth="202.0" styleClass="text_field_pane" BorderPane.alignment="CENTER">

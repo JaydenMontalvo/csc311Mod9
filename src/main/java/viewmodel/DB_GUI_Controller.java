@@ -44,6 +44,8 @@ public class DB_GUI_Controller implements Initializable {
     @FXML
     private MenuItem editItem, deleteItem;
     @FXML
+    private Label statusLabel;
+    @FXML
     ImageView img_view;
     @FXML
     MenuBar menuBar;
@@ -107,6 +109,10 @@ public class DB_GUI_Controller implements Initializable {
         addBtn.setDisable(!(fnOk && lnOk && deptOk && majOk && emOk && urlOk));
     }
 
+    private void setStatus(String message) {
+        statusLabel.setText(message);
+    }
+
     private void setFieldError(TextField field, boolean hasError) {
         if (hasError) {
             if (!field.getStyleClass().contains("error")) field.getStyleClass().add("error");
@@ -124,6 +130,7 @@ public class DB_GUI_Controller implements Initializable {
         p.setId(cnUtil.retrieveId(p));
         data.add(p);
         clearForm();
+        setStatus("Record added successfully for " + p.getFirstName() + " " + p.getLastName() + ".");
     }
 
     @FXML
@@ -181,6 +188,7 @@ public class DB_GUI_Controller implements Initializable {
         data.remove(p);
         data.add(index, p2);
         tv.getSelectionModel().select(index);
+        setStatus("Record updated for " + p2.getFirstName() + " " + p2.getLastName() + ".");
     }
 
     @FXML
@@ -190,6 +198,7 @@ public class DB_GUI_Controller implements Initializable {
         cnUtil.deleteRecord(p);
         data.remove(index);
         tv.getSelectionModel().select(index);
+        setStatus("Record deleted for " + p.getFirstName() + " " + p.getLastName() + ".");
     }
 
     @FXML
