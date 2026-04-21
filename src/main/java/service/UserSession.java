@@ -1,15 +1,12 @@
 package service;
 
-import java.util.HashSet;
-import java.util.Set;
 import java.util.prefs.Preferences;
 
 public class UserSession {
 
-    private static UserSession instance;
+    private static volatile UserSession instance;
 
     private String userName;
-
     private String password;
     private String privileges;
 
@@ -18,42 +15,54 @@ public class UserSession {
         this.password = password;
         this.privileges = privileges;
         Preferences userPreferences = Preferences.userRoot();
-        userPreferences.put("USERNAME",userName);
-        userPreferences.put("PASSWORD",password);
-        userPreferences.put("PRIVILEGES",privileges);
+        userPreferences.put("USERNAME", userName);
+        userPreferences.put("PASSWORD", password);
+        userPreferences.put("PRIVILEGES", privileges);
     }
 
-
-
-    public static UserSession getInstace(String userName,String password, String privileges) {
-        if(instance == null) {
-            instance = new UserSession(userName, password, privileges);
+    public static UserSession getInstance(String userName, String password, String privileges) {
+        if (instance == null) {
+            synchronized (UserSession.class) {
+                if (instance == null) {
+                    instance = new UserSession(userName, password, privileges);
+                }
+            }
         }
         return instance;
     }
 
-    public static UserSession getInstace(String userName,String password) {
-        if(instance == null) {
-            instance = new UserSession(userName, password, "NONE");
+    public static UserSession getInstance(String userName, String password) {
+        return getInstance(userName, password, "NONE");
+    }
+
+    public static UserSession getInstance() {
+        if (instance == null) {
+            throw new IllegalStateException("UserSession not initialized. Call getInstance(user, pass) first.");
         }
         return instance;
     }
-    public String getUserName() {
-        return this.userName;
+
+    public synchronized String getUserName() {
+        return userName;
     }
 
-    public String getPassword() {
-        return this.password;
+    public synchronized String getPassword() {
+        return password;
     }
 
-    public String getPrivileges() {
-        return this.privileges;
+    public synchronized String getPrivileges() {
+        return privileges;
     }
 
-    public void cleanUserSession() {
-        this.userName = "";// or null
+    public synchronized void cleanUserSession() {
+        this.userName = "";
         this.password = "";
-        this.privileges = "";// or null
+        this.privileges = "";
+        instance = null;
+        Preferences userPreferences = Preferences.userRoot();
+        userPreferences.remove("USERNAME");
+        userPreferences.remove("PASSWORD");
+        userPreferences.remove("PRIVILEGES");
     }
 
     @Override
