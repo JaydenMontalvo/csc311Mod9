@@ -18,19 +18,21 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import model.Major;
 import model.Person;
 import service.MyLogger;
 
 import java.io.File;
 import java.net.URL;
-import java.time.LocalDate;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
 public class DB_GUI_Controller implements Initializable {
 
     @FXML
-    TextField first_name, last_name, department, major, email, imageURL;
+    TextField first_name, last_name, department, email, imageURL;
+    @FXML
+    ComboBox<Major> major;
     @FXML
     ImageView img_view;
     @FXML
@@ -54,6 +56,7 @@ public class DB_GUI_Controller implements Initializable {
             tv_major.setCellValueFactory(new PropertyValueFactory<>("major"));
             tv_email.setCellValueFactory(new PropertyValueFactory<>("email"));
             tv.setItems(data);
+            major.setItems(FXCollections.observableArrayList(Major.values()));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -61,15 +64,13 @@ public class DB_GUI_Controller implements Initializable {
 
     @FXML
     protected void addNewRecord() {
-
-            Person p = new Person(first_name.getText(), last_name.getText(), department.getText(),
-                    major.getText(), email.getText(), imageURL.getText());
-            cnUtil.insertUser(p);
-            cnUtil.retrieveId(p);
-            p.setId(cnUtil.retrieveId(p));
-            data.add(p);
-            clearForm();
-
+        Person p = new Person(first_name.getText(), last_name.getText(), department.getText(),
+                major.getValue().name(), email.getText(), imageURL.getText());
+        cnUtil.insertUser(p);
+        cnUtil.retrieveId(p);
+        p.setId(cnUtil.retrieveId(p));
+        data.add(p);
+        clearForm();
     }
 
     @FXML
@@ -77,7 +78,7 @@ public class DB_GUI_Controller implements Initializable {
         first_name.setText("");
         last_name.setText("");
         department.setText("");
-        major.setText("");
+        major.getSelectionModel().clearSelection();
         email.setText("");
         imageURL.setText("");
     }
@@ -119,7 +120,7 @@ public class DB_GUI_Controller implements Initializable {
         Person p = tv.getSelectionModel().getSelectedItem();
         int index = data.indexOf(p);
         Person p2 = new Person(index + 1, first_name.getText(), last_name.getText(), department.getText(),
-                major.getText(), email.getText(),  imageURL.getText());
+                major.getValue().name(), email.getText(), imageURL.getText());
         cnUtil.editUser(p.getId(), p2);
         data.remove(p);
         data.add(index, p2);
@@ -151,10 +152,15 @@ public class DB_GUI_Controller implements Initializable {
     @FXML
     protected void selectedItemTV(MouseEvent mouseEvent) {
         Person p = tv.getSelectionModel().getSelectedItem();
+        if (p == null) return;
         first_name.setText(p.getFirstName());
         last_name.setText(p.getLastName());
         department.setText(p.getDepartment());
-        major.setText(p.getMajor());
+        try {
+            major.setValue(Major.valueOf(p.getMajor()));
+        } catch (IllegalArgumentException e) {
+            major.getSelectionModel().clearSelection();
+        }
         email.setText(p.getEmail());
         imageURL.setText(p.getImageURL());
     }
@@ -214,10 +220,7 @@ public class DB_GUI_Controller implements Initializable {
         });
     }
 
-    private static enum Major {Business, CSC, CPIS}
-
     private static class Results {
-
         String fname;
         String lname;
         Major major;

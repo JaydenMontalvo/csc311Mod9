@@ -2,6 +2,7 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Menu?>
 <?import javafx.scene.control.MenuBar?>
@@ -89,11 +90,11 @@
                                 <Insets left="10.0" right="10.0" top="5.0" />
                             </VBox.margin>
                         </TextField>
-                        <TextField fx:id="major" promptText="Major" styleClass="text_field">
+                        <ComboBox fx:id="major" maxWidth="1.7976931348623157E308" promptText="Major" styleClass="text_field">
                             <VBox.margin>
                                 <Insets left="10.0" right="10.0" top="5.0" />
                             </VBox.margin>
-                        </TextField>
+                        </ComboBox>
                         <TextField fx:id="email" promptText="Email" styleClass="text_field">
                             <VBox.margin>
                                 <Insets left="10.0" right="10.0" top="5.0" />
