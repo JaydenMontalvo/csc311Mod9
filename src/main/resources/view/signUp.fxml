@@ -21,6 +21,9 @@
         <font><Font name="System Bold" size="36.0" /></font>
     </Label>
 
+    <TextField fx:id="usernameField" promptText="Username"
+               prefWidth="300.0" style="-fx-border-color: black; -fx-border-radius: 3;" />
+
     <TextField fx:id="emailField" promptText="Email (e.g. user@domain.edu)"
                prefWidth="300.0" style="-fx-border-color: black; -fx-border-radius: 3;" />
 

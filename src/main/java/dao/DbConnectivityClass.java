@@ -1,234 +1,241 @@
 package dao;
 
+import com.google.gson.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import model.Person;
 import service.MyLogger;
 
-import java.sql.*;
+import java.io.InputStreamReader;
+import java.net.URI;
+import java.net.http.*;
+import java.nio.charset.StandardCharsets;
+import java.security.*;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.util.Base64;
+
 public class DbConnectivityClass {
-    final static String DB_NAME="CSC311_BD_TEMP";
-        MyLogger lg= new MyLogger();
-        final static String SQL_SERVER_URL = "jdbc:mysql://server.mariadb.database.azure.com";//update this server name
-        final static String DB_URL = "jdbc:mysql://server.mariadb.database.azure.com/"+DB_NAME;//update this database name
-        final static String USERNAME = "csc311admin@server";// update this username
-        final static String PASSWORD = "FARM";// update this password
 
+    private static final String PROJECT_ID = "cscassignment9211";
+    private static final String BASE_URL   =
+            "https://firestore.googleapis.com/v1/projects/" + PROJECT_ID + "/databases/(default)/documents";
+    private static final String TOKEN_URL  = "https://oauth2.googleapis.com/token";
 
-        private final ObservableList<Person> data = FXCollections.observableArrayList();
+    private final MyLogger   lg   = new MyLogger();
+    private final HttpClient http = HttpClient.newHttpClient();
+    private final Gson       gson = new Gson();
+    private final ObservableList<Person> data = FXCollections.observableArrayList();
 
-        // Method to retrieve all data from the database and store it into an observable list to use in the GUI tableview.
+    private String     clientEmail;
+    private PrivateKey privateKey;
+    private String     accessToken;
+    private long       tokenExpiry = 0;
 
-
-        public ObservableList<Person> getData() {
-            connectToDatabase();
-            try {
-                Connection conn = DriverManager.getConnection(DB_URL, USERNAME, PASSWORD);
-                String sql = "SELECT * FROM users ";
-                PreparedStatement preparedStatement = conn.prepareStatement(sql);
-                ResultSet resultSet = preparedStatement.executeQuery();
-                if (!resultSet.isBeforeFirst()) {
-                    lg.makeLog("No data");
-                }
-                while (resultSet.next()) {
-                    int id = resultSet.getInt("id");
-                    String first_name = resultSet.getString("first_name");
-                    String last_name = resultSet.getString("last_name");
-                    String department = resultSet.getString("department");
-                    String major = resultSet.getString("major");
-                    String email = resultSet.getString("email");
-                    String imageURL = resultSet.getString("imageURL");
-                    data.add(new Person(id, first_name, last_name, department, major, email, imageURL));
-                }
-                preparedStatement.close();
-                conn.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-            return data;
-        }
-
-
-        public boolean connectToDatabase() {
-            boolean hasRegistredUsers = false;
-
-            try {
-                Class.forName("com.mysql.cj.jdbc.Driver");
-
-                //First, connect to MYSQL server and create the database if not created
-                Connection conn = DriverManager.getConnection(SQL_SERVER_URL, USERNAME, PASSWORD);
-                Statement statement = conn.createStatement();
-                statement.executeUpdate("CREATE DATABASE IF NOT EXISTS "+DB_NAME+"");
-                statement.close();
-                conn.close();
-
-                //Second, connect to the database and create the table "users" if cot created
-                conn = DriverManager.getConnection(DB_URL, USERNAME, PASSWORD);
-                statement = conn.createStatement();
-                String sql = "CREATE TABLE IF NOT EXISTS users (" + "id INT( 10 ) NOT NULL PRIMARY KEY AUTO_INCREMENT,"
-                        + "first_name VARCHAR(200) NOT NULL," + "last_name VARCHAR(200) NOT NULL,"
-                        + "department VARCHAR(200),"
-                        + "major VARCHAR(200),"
-                        + "email VARCHAR(200) NOT NULL UNIQUE,"
-                        + "imageURL VARCHAR(200))";
-                statement.executeUpdate(sql);
-
-                //check if we have users in the table users
-                statement = conn.createStatement();
-                ResultSet resultSet = statement.executeQuery("SELECT COUNT(*) FROM users");
-
-                if (resultSet.next()) {
-                    int numUsers = resultSet.getInt(1);
-                    if (numUsers > 0) {
-                        hasRegistredUsers = true;
-                    }
-                }
-
-                statement.close();
-                conn.close();
-
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-            return hasRegistredUsers;
-        }
-
-        public void queryUserByLastName(String name) {
-            connectToDatabase();
-            try {
-                Connection conn = DriverManager.getConnection(DB_URL, USERNAME, PASSWORD);
-                String sql = "SELECT * FROM users WHERE last_name = ?";
-                PreparedStatement preparedStatement = conn.prepareStatement(sql);
-                preparedStatement.setString(1, name);
-
-                ResultSet resultSet = preparedStatement.executeQuery();
-
-                while (resultSet.next()) {
-                    int id = resultSet.getInt("id");
-                    String first_name = resultSet.getString("first_name");
-                    String last_name = resultSet.getString("last_name");
-                    String major = resultSet.getString("major");
-                    String department = resultSet.getString("department");
-
-                    lg.makeLog("ID: " + id + ", Name: " + first_name + " " + last_name + " "
-                            + ", Major: " + major + ", Department: " + department);
-                }
-                preparedStatement.close();
-                conn.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
-
-        public void listAllUsers() {
-            connectToDatabase();
-            try {
-                Connection conn = DriverManager.getConnection(DB_URL, USERNAME, PASSWORD);
-                String sql = "SELECT * FROM users ";
-                PreparedStatement preparedStatement = conn.prepareStatement(sql);
-
-                ResultSet resultSet = preparedStatement.executeQuery();
-
-                while (resultSet.next()) {
-                    int id = resultSet.getInt("id");
-                    String first_name = resultSet.getString("first_name");
-                    String last_name = resultSet.getString("last_name");
-                    String department = resultSet.getString("department");
-                    String major = resultSet.getString("major");
-                    String email = resultSet.getString("email");
-
-                    lg.makeLog("ID: " + id + ", Name: " + first_name + " " + last_name + " "
-                            + ", Department: " + department + ", Major: " + major + ", Email: " + email);
-                }
-
-                preparedStatement.close();
-                conn.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
-
-        public void insertUser(Person person) {
-            connectToDatabase();
-            try {
-                Connection conn = DriverManager.getConnection(DB_URL, USERNAME, PASSWORD);
-                String sql = "INSERT INTO users (first_name, last_name, department, major, email, imageURL) VALUES (?, ?, ?, ?, ?, ?)";
-                PreparedStatement preparedStatement = conn.prepareStatement(sql);
-                preparedStatement.setString(1, person.getFirstName());
-                preparedStatement.setString(2, person.getLastName());
-                preparedStatement.setString(3, person.getDepartment());
-                preparedStatement.setString(4, person.getMajor());
-                preparedStatement.setString(5, person.getEmail());
-                preparedStatement.setString(6, person.getImageURL());
-                int row = preparedStatement.executeUpdate();
-                if (row > 0) {
-                    lg.makeLog("A new user was inserted successfully.");
-                }
-                preparedStatement.close();
-                conn.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
-
-        public void editUser(int id, Person p) {
-            connectToDatabase();
-            try {
-                Connection conn = DriverManager.getConnection(DB_URL, USERNAME, PASSWORD);
-                String sql = "UPDATE users SET first_name=?, last_name=?, department=?, major=?, email=?, imageURL=? WHERE id=?";
-                PreparedStatement preparedStatement = conn.prepareStatement(sql);
-                preparedStatement.setString(1, p.getFirstName());
-                preparedStatement.setString(2, p.getLastName());
-                preparedStatement.setString(3, p.getDepartment());
-                preparedStatement.setString(4, p.getMajor());
-                preparedStatement.setString(5, p.getEmail());
-                preparedStatement.setString(6, p.getImageURL());
-                preparedStatement.setInt(7, id);
-                preparedStatement.executeUpdate();
-                preparedStatement.close();
-                conn.close();
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        public void deleteRecord(Person person) {
-            int id = person.getId();
-            connectToDatabase();
-            try {
-                Connection conn = DriverManager.getConnection(DB_URL, USERNAME, PASSWORD);
-                String sql = "DELETE FROM users WHERE id=?";
-                PreparedStatement preparedStatement = conn.prepareStatement(sql);
-                preparedStatement.setInt(1, id);
-                preparedStatement.executeUpdate();
-                preparedStatement.close();
-                conn.close();
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        //Method to retrieve id from database where it is auto-incremented.
-        public int retrieveId(Person p) {
-            connectToDatabase();
-            int id;
-            try {
-                Connection conn = DriverManager.getConnection(DB_URL, USERNAME, PASSWORD);
-                String sql = "SELECT id FROM users WHERE email=?";
-                PreparedStatement preparedStatement = conn.prepareStatement(sql);
-                preparedStatement.setString(1, p.getEmail());
-
-                ResultSet resultSet = preparedStatement.executeQuery();
-                resultSet.next();
-                id = resultSet.getInt("id");
-                preparedStatement.close();
-                conn.close();
-
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
-            lg.makeLog(String.valueOf(id));
-            return id;
+    public DbConnectivityClass() {
+        try (var is = getClass().getResourceAsStream("/tempKey.json")) {
+            JsonObject sa = gson.fromJson(new InputStreamReader(is), JsonObject.class);
+            clientEmail = sa.get("client_email").getAsString();
+            String pem = sa.get("private_key").getAsString()
+                    .replace("-----BEGIN PRIVATE KEY-----", "")
+                    .replace("-----END PRIVATE KEY-----", "")
+                    .replaceAll("\\s+", "");
+            byte[] keyBytes = Base64.getDecoder().decode(pem);
+            privateKey = KeyFactory.getInstance("RSA").generatePrivate(new PKCS8EncodedKeySpec(keyBytes));
+        } catch (Exception e) {
+            throw new RuntimeException("Firebase key load failed", e);
         }
     }
+
+    private String token() {
+        long now = System.currentTimeMillis() / 1000;
+        if (accessToken != null && now < tokenExpiry - 60) return accessToken;
+        try {
+            String hdr = b64("{\"alg\":\"RS256\",\"typ\":\"JWT\"}");
+            String claims = b64("{\"iss\":\"" + clientEmail + "\","
+                    + "\"scope\":\"https://www.googleapis.com/auth/datastore\","
+                    + "\"aud\":\"" + TOKEN_URL + "\","
+                    + "\"exp\":" + (now + 3600) + ",\"iat\":" + now + "}");
+            String input = hdr + "." + claims;
+            Signature sig = Signature.getInstance("SHA256withRSA");
+            sig.initSign(privateKey);
+            sig.update(input.getBytes(StandardCharsets.UTF_8));
+            String jwt = input + "." + Base64.getUrlEncoder().withoutPadding().encodeToString(sig.sign());
+
+            String body = "grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Ajwt-bearer&assertion=" + jwt;
+            HttpResponse<String> resp = http.send(
+                    HttpRequest.newBuilder().uri(URI.create(TOKEN_URL))
+                            .header("Content-Type", "application/x-www-form-urlencoded")
+                            .POST(HttpRequest.BodyPublishers.ofString(body)).build(),
+                    HttpResponse.BodyHandlers.ofString());
+            JsonObject t = gson.fromJson(resp.body(), JsonObject.class);
+            accessToken = t.get("access_token").getAsString();
+            tokenExpiry = now + t.get("expires_in").getAsLong();
+            return accessToken;
+        } catch (Exception e) {
+            throw new RuntimeException("Token fetch failed", e);
+        }
+    }
+
+    private static String b64(String s) {
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(s.getBytes(StandardCharsets.UTF_8));
+    }
+
+    private HttpRequest.Builder auth(String url) {
+        return HttpRequest.newBuilder().uri(URI.create(url))
+                .header("Authorization", "Bearer " + token())
+                .header("Content-Type", "application/json");
+    }
+
+    public ObservableList<Person> getData() {
+        data.clear();
+        try {
+            HttpResponse<String> resp = http.send(auth(BASE_URL + "/users").GET().build(),
+                    HttpResponse.BodyHandlers.ofString());
+            JsonObject json = gson.fromJson(resp.body(), JsonObject.class);
+            if (json.has("documents")) {
+                for (JsonElement e : json.getAsJsonArray("documents")) {
+                    JsonObject doc    = e.getAsJsonObject();
+                    JsonObject fields = doc.getAsJsonObject("fields");
+                    String docName = doc.get("name").getAsString();
+                    int id = (int) fields.getAsJsonObject("id").get("integerValue").getAsLong();
+                    data.add(new Person(id,
+                            str(fields, "firstName"), str(fields, "lastName"),
+                            str(fields, "department"), str(fields, "major"),
+                            str(fields, "email"),      str(fields, "imageURL")));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return data;
+    }
+
+    public void insertUser(Person person) {
+        try {
+            int nextId = nextId();
+            person.setId(nextId);
+            http.send(auth(BASE_URL + "/users")
+                    .POST(HttpRequest.BodyPublishers.ofString(docBody(person))).build(),
+                    HttpResponse.BodyHandlers.ofString());
+            lg.makeLog("Inserted: " + person.getEmail());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public int retrieveId(Person p) {
+        return p.getId();
+    }
+
+    public void editUser(int id, Person p) {
+        try {
+            String docId = findDocId(id);
+            if (docId == null) return;
+            String url = BASE_URL + "/users/" + docId
+                    + "?updateMask.fieldPaths=firstName&updateMask.fieldPaths=lastName"
+                    + "&updateMask.fieldPaths=department&updateMask.fieldPaths=major"
+                    + "&updateMask.fieldPaths=email&updateMask.fieldPaths=imageURL";
+            p.setId(id);
+            http.send(auth(url).method("PATCH", HttpRequest.BodyPublishers.ofString(docBody(p))).build(),
+                    HttpResponse.BodyHandlers.ofString());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void deleteRecord(Person person) {
+        try {
+            String docId = findDocId(person.getId());
+            if (docId == null) return;
+            http.send(auth(BASE_URL + "/users/" + docId).DELETE().build(),
+                    HttpResponse.BodyHandlers.ofString());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private int nextId() throws Exception {
+        String counterUrl = BASE_URL + "/meta/counter";
+        HttpResponse<String> resp = http.send(auth(counterUrl).GET().build(),
+                HttpResponse.BodyHandlers.ofString());
+        JsonObject json = gson.fromJson(resp.body(), JsonObject.class);
+        int next = 1;
+        if (json.has("fields") && json.getAsJsonObject("fields").has("lastId"))
+            next = (int) json.getAsJsonObject("fields").getAsJsonObject("lastId").get("integerValue").getAsLong() + 1;
+        String patch = "{\"fields\":{\"lastId\":{\"integerValue\":\"" + next + "\"}}}";
+        http.send(auth(counterUrl + "?updateMask.fieldPaths=lastId")
+                .method("PATCH", HttpRequest.BodyPublishers.ofString(patch)).build(),
+                HttpResponse.BodyHandlers.ofString());
+        return next;
+    }
+
+    private String findDocId(int id) throws Exception {
+        String queryUrl = "https://firestore.googleapis.com/v1/projects/" + PROJECT_ID
+                + "/databases/(default)/documents:runQuery";
+        String body = "{\"structuredQuery\":{\"from\":[{\"collectionId\":\"users\"}],"
+                + "\"where\":{\"fieldFilter\":{\"field\":{\"fieldPath\":\"id\"},"
+                + "\"op\":\"EQUAL\",\"value\":{\"integerValue\":\"" + id + "\"}}}}}";
+        HttpResponse<String> resp = http.send(
+                auth(queryUrl).POST(HttpRequest.BodyPublishers.ofString(body)).build(),
+                HttpResponse.BodyHandlers.ofString());
+        JsonArray arr = gson.fromJson(resp.body(), JsonArray.class);
+        if (arr != null && !arr.isEmpty()) {
+            JsonObject first = arr.get(0).getAsJsonObject();
+            if (first.has("document")) {
+                String name = first.getAsJsonObject("document").get("name").getAsString();
+                return name.substring(name.lastIndexOf('/') + 1);
+            }
+        }
+        return null;
+    }
+
+    private String docBody(Person p) {
+        return "{\"fields\":{"
+                + "\"id\":{\"integerValue\":\"" + p.getId() + "\"},"
+                + "\"firstName\":{\"stringValue\":\"" + p.getFirstName() + "\"},"
+                + "\"lastName\":{\"stringValue\":\"" + p.getLastName() + "\"},"
+                + "\"department\":{\"stringValue\":\"" + p.getDepartment() + "\"},"
+                + "\"major\":{\"stringValue\":\"" + p.getMajor() + "\"},"
+                + "\"email\":{\"stringValue\":\"" + p.getEmail() + "\"},"
+                + "\"imageURL\":{\"stringValue\":\"" + (p.getImageURL() != null ? p.getImageURL() : "") + "\"}"
+                + "}}";
+    }
+
+    private String str(JsonObject fields, String key) {
+        if (fields.has(key) && fields.getAsJsonObject(key).has("stringValue"))
+            return fields.getAsJsonObject(key).get("stringValue").getAsString();
+        return "";
+    }
+
+    public void queryUserByLastName(String name) {
+        try {
+            String queryUrl = "https://firestore.googleapis.com/v1/projects/" + PROJECT_ID
+                    + "/databases/(default)/documents:runQuery";
+            String body = "{\"structuredQuery\":{\"from\":[{\"collectionId\":\"users\"}],"
+                    + "\"where\":{\"fieldFilter\":{\"field\":{\"fieldPath\":\"lastName\"},"
+                    + "\"op\":\"EQUAL\",\"value\":{\"stringValue\":\"" + name + "\"}}}}}";
+            HttpResponse<String> resp = http.send(
+                    auth(queryUrl).POST(HttpRequest.BodyPublishers.ofString(body)).build(),
+                    HttpResponse.BodyHandlers.ofString());
+            JsonArray arr = gson.fromJson(resp.body(), JsonArray.class);
+            if (arr != null) for (JsonElement e : arr) {
+                JsonObject obj = e.getAsJsonObject();
+                if (obj.has("document")) {
+                    JsonObject f = obj.getAsJsonObject("document").getAsJsonObject("fields");
+                    lg.makeLog("Found: " + str(f, "firstName") + " " + str(f, "lastName"));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void listAllUsers() {
+        for (Person p : data)
+            lg.makeLog("ID: " + p.getId() + ", " + p.getFirstName() + " " + p.getLastName());
+    }
+
+    public boolean connectToDatabase() {
+        return privateKey != null;
+    }
+}

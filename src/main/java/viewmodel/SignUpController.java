@@ -10,15 +10,16 @@ import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
-import service.UserSession;
 
 import java.util.prefs.Preferences;
 
 public class SignUpController {
 
+    private static final String USERNAME_REGEX = "^[a-zA-Z0-9_]{4,20}$";
     private static final String EMAIL_REGEX    = "^[a-zA-Z0-9._%+\\-]+@[a-zA-Z0-9.\\-]+\\.[a-zA-Z]{2,6}$";
     private static final String PASSWORD_REGEX = "^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$";
 
+    @FXML private TextField usernameField;
     @FXML private TextField emailField;
     @FXML private PasswordField passwordField;
     @FXML private PasswordField confirmPasswordField;
@@ -26,10 +27,15 @@ public class SignUpController {
 
     @FXML
     public void createNewAccount(ActionEvent actionEvent) {
+        String username = usernameField.getText().trim();
         String email    = emailField.getText().trim();
         String password = passwordField.getText();
         String confirm  = confirmPasswordField.getText();
 
+        if (!username.matches(USERNAME_REGEX)) {
+            statusLabel.setText("Username must be 4-20 characters (letters, numbers, underscore only).");
+            return;
+        }
         if (!email.matches(EMAIL_REGEX)) {
             statusLabel.setText("Please enter a valid email address.");
             return;
@@ -44,10 +50,9 @@ public class SignUpController {
         }
 
         Preferences prefs = Preferences.userRoot();
-        prefs.put("USERNAME", email);
+        prefs.put("USERNAME", username);
         prefs.put("PASSWORD", password);
-
-        UserSession.getInstance(email, password, "USER");
+        prefs.put("EMAIL", email);
 
         statusLabel.setStyle("-fx-text-fill: green; -fx-font-size: 13px;");
         statusLabel.setText("Account created! Redirecting to login...");

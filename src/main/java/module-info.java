@@ -1,9 +1,10 @@
 module com.example.csc311_db_ui_semesterlongproject {
     requires javafx.controls;
     requires javafx.fxml;
-    requires java.sql;
     requires java.prefs;
-
+    requires java.net.http;
+    requires java.logging;
+    requires com.google.gson;
 
     opens viewmodel;
     exports viewmodel;
