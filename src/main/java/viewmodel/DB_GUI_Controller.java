@@ -22,10 +22,16 @@ import model.Major;
 import model.Person;
 import service.MyLogger;
 
+import org.apache.pdfbox.pdmodel.*;
+import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import org.apache.pdfbox.pdmodel.font.PDType1Font;
+import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
+
 import java.io.*;
 import java.net.URL;
-import java.util.Optional;
-import java.util.ResourceBundle;
+import java.time.LocalDate;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class DB_GUI_Controller implements Initializable {
 
@@ -267,6 +273,82 @@ public class DB_GUI_Controller implements Initializable {
             scene.getStylesheets().add(getClass().getResource("/css/darkTheme.css").toExternalForm());
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    @FXML
+    protected void generatePDFReport() {
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle("Save PDF Report");
+        chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("PDF Files", "*.pdf"));
+        chooser.setInitialFileName("report_by_major.pdf");
+        File file = chooser.showSaveDialog(menuBar.getScene().getWindow());
+        if (file == null) return;
+
+        Map<String, Long> countByMajor = data.stream()
+                .collect(Collectors.groupingBy(Person::getMajor, Collectors.counting()));
+
+        try (PDDocument doc = new PDDocument()) {
+            PDPage page = new PDPage(PDRectangle.LETTER);
+            doc.addPage(page);
+            PDType1Font bold    = new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD);
+            PDType1Font regular = new PDType1Font(Standard14Fonts.FontName.HELVETICA);
+
+            try (PDPageContentStream cs = new PDPageContentStream(doc, page)) {
+                float y = 720;
+
+                cs.beginText();
+                cs.setFont(bold, 20);
+                cs.newLineAtOffset(72, y);
+                cs.showText("Jayden Student Registry - Report by Major");
+                cs.endText();
+                y -= 24;
+
+                cs.beginText();
+                cs.setFont(regular, 11);
+                cs.newLineAtOffset(72, y);
+                cs.showText("Generated: " + LocalDate.now());
+                cs.endText();
+                y -= 30;
+
+                cs.beginText();
+                cs.setFont(bold, 13);
+                cs.newLineAtOffset(72, y);
+                cs.showText(String.format("%-20s %s", "Major", "Students"));
+                cs.endText();
+                y -= 6;
+
+                cs.moveTo(72, y);
+                cs.lineTo(400, y);
+                cs.stroke();
+                y -= 18;
+
+                for (Map.Entry<String, Long> entry : countByMajor.entrySet()) {
+                    cs.beginText();
+                    cs.setFont(regular, 12);
+                    cs.newLineAtOffset(72, y);
+                    cs.showText(String.format("%-20s %d", entry.getKey(), entry.getValue()));
+                    cs.endText();
+                    y -= 18;
+                }
+
+                y -= 10;
+                cs.moveTo(72, y);
+                cs.lineTo(400, y);
+                cs.stroke();
+                y -= 18;
+
+                cs.beginText();
+                cs.setFont(bold, 12);
+                cs.newLineAtOffset(72, y);
+                cs.showText(String.format("%-20s %d", "Total", data.size()));
+                cs.endText();
+            }
+
+            doc.save(file);
+            setStatus("PDF report saved to " + file.getName() + ".");
+        } catch (IOException e) {
+            setStatus("PDF generation failed: " + e.getMessage());
         }
     }
 

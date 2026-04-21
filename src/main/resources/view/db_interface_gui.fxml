@@ -36,8 +36,8 @@
                      <items>
                         <MenuItem fx:id="editItem" mnemonicParsing="true" onAction="#editRecord" styleClass="menu_items" text="_Edit       Ctrl+E" />
                         <MenuItem fx:id="deleteItem" mnemonicParsing="true" onAction="#deleteRecord" styleClass="menu_items" text="_Delete        Ctrl+D" />
-                        <MenuItem fx:id="ClearItem" mnemonicParsing="false" styleClass="menu_items" text="Clea_r        Ctrl+R" />
-                        <MenuItem fx:id="CopyItem" mnemonicParsing="false" styleClass="menu_items" text="_Copy       Ctrl+C" />
+                        <MenuItem fx:id="ClearItem" mnemonicParsing="false" styleClass="menu_items" text="Clear        Ctrl+R" />
+                        <MenuItem fx:id="CopyItem" mnemonicParsing="false" styleClass="menu_items" text="Copy       Ctrl+C" />
                      </items>
                   </Menu>
                         <Menu mnemonicParsing="false" styleClass="menu_options" text="Theme">
@@ -50,6 +50,11 @@
                             <items>
                                 <MenuItem mnemonicParsing="false" onAction="#importCSV" styleClass="menu_items" text="Import CSV" />
                                 <MenuItem mnemonicParsing="false" onAction="#exportCSV" styleClass="menu_items" text="Export CSV" />
+                            </items>
+                        </Menu>
+                        <Menu mnemonicParsing="false" styleClass="menu_options" text="Reports">
+                            <items>
+                                <MenuItem mnemonicParsing="false" onAction="#generatePDFReport" styleClass="menu_items" text="PDF Report by Major" />
                             </items>
                         </Menu>
                         <Menu mnemonicParsing="false" styleClass="menu_options" text="Help">

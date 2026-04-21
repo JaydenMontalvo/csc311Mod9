@@ -5,6 +5,7 @@ module com.example.csc311_db_ui_semesterlongproject {
     requires java.net.http;
     requires java.logging;
     requires com.google.gson;
+    requires org.apache.pdfbox;
 
     opens viewmodel;
     exports viewmodel;
