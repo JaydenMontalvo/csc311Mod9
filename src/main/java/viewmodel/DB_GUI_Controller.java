@@ -44,7 +44,7 @@ public class DB_GUI_Controller implements Initializable {
     @FXML
     private MenuItem editItem, deleteItem;
     @FXML
-    private Label statusLabel;
+    private Label statusLabel, countLabel;
     @FXML
     ImageView img_view;
     @FXML
@@ -80,6 +80,8 @@ public class DB_GUI_Controller implements Initializable {
             email.textProperty().addListener((obs, o, n)      -> validateForm());
             imageURL.textProperty().addListener((obs, o, n)   -> validateForm());
             major.valueProperty().addListener((obs, o, n)     -> validateForm());
+            data.addListener((javafx.collections.ListChangeListener<Person>) c -> updateCount());
+            updateCount();
             tv.getSelectionModel().selectedItemProperty().addListener((obs, o, n) -> {
                 boolean selected = n != null;
                 editBtn.setDisable(!selected);
@@ -111,6 +113,10 @@ public class DB_GUI_Controller implements Initializable {
 
     private void setStatus(String message) {
         statusLabel.setText(message);
+    }
+
+    private void updateCount() {
+        countLabel.setText("Records: " + data.size());
     }
 
     private void setFieldError(TextField field, boolean hasError) {
@@ -194,6 +200,12 @@ public class DB_GUI_Controller implements Initializable {
     @FXML
     protected void deleteRecord() {
         Person p = tv.getSelectionModel().getSelectedItem();
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Delete Record");
+        confirm.setHeaderText("Delete " + p.getFirstName() + " " + p.getLastName() + "?");
+        confirm.setContentText("This action cannot be undone.");
+        Optional<ButtonType> result = confirm.showAndWait();
+        if (result.isEmpty() || result.get() != ButtonType.OK) return;
         int index = data.indexOf(p);
         cnUtil.deleteRecord(p);
         data.remove(index);
@@ -218,16 +230,18 @@ public class DB_GUI_Controller implements Initializable {
     protected void selectedItemTV(MouseEvent mouseEvent) {
         Person p = tv.getSelectionModel().getSelectedItem();
         if (p == null) return;
-        first_name.setText(p.getFirstName());
-        last_name.setText(p.getLastName());
-        department.setText(p.getDepartment());
-        try {
-            major.setValue(Major.valueOf(p.getMajor()));
-        } catch (IllegalArgumentException e) {
-            major.getSelectionModel().clearSelection();
+        if (mouseEvent.getClickCount() == 2) {
+            first_name.setText(p.getFirstName());
+            last_name.setText(p.getLastName());
+            department.setText(p.getDepartment());
+            try {
+                major.setValue(Major.valueOf(p.getMajor()));
+            } catch (IllegalArgumentException e) {
+                major.getSelectionModel().clearSelection();
+            }
+            email.setText(p.getEmail());
+            imageURL.setText(p.getImageURL());
         }
-        email.setText(p.getEmail());
-        imageURL.setText(p.getImageURL());
     }
 
     public void lightTheme(ActionEvent actionEvent) {

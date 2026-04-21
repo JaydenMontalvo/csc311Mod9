@@ -1,20 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.*?>
+<?import javafx.scene.control.Label?>
 <?import javafx.scene.image.*?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
 
-<VBox alignment="CENTER" prefHeight="365.0" prefWidth="511.0" spacing="20.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/17.0.2-ea" fx:controller="viewmodel.SpalshScreenController">
+<VBox alignment="CENTER" prefHeight="600.0" prefWidth="900.0" spacing="20.0" style="-fx-background-color: white;" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/20.0.1" fx:controller="viewmodel.SpalshScreenController">
     <padding>
         <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
     </padding>
-   <children>
-      <ImageView fitHeight="316.0" fitWidth="459.0" pickOnBounds="true" preserveRatio="true"  >
-       <image>
-                <Image url="@../images/fsclogo.png" />
-       </image>
-      </ImageView>
-   </children>
+    <children>
+        <ImageView fitHeight="200.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true">
+            <image>
+                <Image url="@../images/HeadIcon.png" />
+            </image>
+        </ImageView>
+        <Label text="Jayden Student Registry" textFill="#111386">
+            <font><Font name="System Bold" size="36.0" /></font>
+        </Label>
+    </children>
 </VBox>

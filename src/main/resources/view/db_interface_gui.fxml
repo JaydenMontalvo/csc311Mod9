@@ -15,6 +15,7 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 
 <AnchorPane fx:id="anchorPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="920.0" styleClass="anchor_pane" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="viewmodel.DB_GUI_Controller">
@@ -79,6 +80,8 @@
                 <HBox prefHeight="30.0" prefWidth="892.0" styleClass="admin_section" BorderPane.alignment="CENTER">
                     <children>
                         <Label fx:id="statusLabel" style="-fx-text-fill: white; -fx-font-size: 13px; -fx-padding: 5 10 5 10;" text="" />
+                        <Region HBox.hgrow="ALWAYS" />
+                        <Label fx:id="countLabel" style="-fx-text-fill: white; -fx-font-size: 13px; -fx-padding: 5 10 5 10;" text="Records: 0" />
                     </children>
                 </HBox>
             </bottom>

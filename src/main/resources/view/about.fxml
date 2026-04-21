@@ -7,12 +7,13 @@
 
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1">
    <children>
-      <TextArea layoutX="6.0" layoutY="51.0" prefHeight="343.0" prefWidth="584.0" text="Your text goes here " wrapText="true">
+      <TextArea layoutX="6.0" layoutY="51.0" prefHeight="343.0" prefWidth="584.0" editable="false" wrapText="true"
+                text="Jayden Student Registry&#10;&#10;A JavaFX desktop application for managing student records. Features include adding, editing, and deleting student entries, CSV import/export, theme switching, and secure user authentication.&#10;&#10;Version: 1.0&#10;Platform: JavaFX 20 / Java 20">
          <font>
             <Font name="System Bold" size="16.0" />
          </font>
       </TextArea>
-      <Label alignment="TOP_LEFT" layoutX="8.0" layoutY="11.0" prefHeight="44.0" prefWidth="542.0" text="Developer: MM mM">
+      <Label layoutX="8.0" layoutY="11.0" prefHeight="44.0" prefWidth="542.0" text="Developer: Jayden Montalvo">
          <font>
             <Font name="System Bold" size="26.0" />
          </font>
