@@ -45,6 +45,12 @@
                                 <MenuItem mnemonicParsing="false" onAction="#darkTheme" styleClass="menu_items" text="DARK THEME" />
                             </items>
                         </Menu>
+                        <Menu mnemonicParsing="false" styleClass="menu_options" text="CSV">
+                            <items>
+                                <MenuItem mnemonicParsing="false" onAction="#importCSV" styleClass="menu_items" text="Import CSV" />
+                                <MenuItem mnemonicParsing="false" onAction="#exportCSV" styleClass="menu_items" text="Export CSV" />
+                            </items>
+                        </Menu>
                         <Menu mnemonicParsing="false" styleClass="menu_options" text="Help">
                             <items>
                                 <MenuItem mnemonicParsing="false" onAction="#displayAbout" styleClass="menu_items" text="Help" />

@@ -22,7 +22,7 @@ import model.Major;
 import model.Person;
 import service.MyLogger;
 
-import java.io.File;
+import java.io.*;
 import java.net.URL;
 import java.util.Optional;
 import java.util.ResourceBundle;
@@ -253,6 +253,55 @@ public class DB_GUI_Controller implements Initializable {
             scene.getStylesheets().add(getClass().getResource("/css/darkTheme.css").toExternalForm());
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    @FXML
+    protected void importCSV() {
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle("Import CSV");
+        chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV Files", "*.csv"));
+        File file = chooser.showOpenDialog(menuBar.getScene().getWindow());
+        if (file == null) return;
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+            String line;
+            boolean firstLine = true;
+            int imported = 0;
+            while ((line = br.readLine()) != null) {
+                if (firstLine) { firstLine = false; continue; }
+                String[] parts = line.split(",", -1);
+                if (parts.length < 6) continue;
+                Person p = new Person(parts[0].trim(), parts[1].trim(), parts[2].trim(),
+                        parts[3].trim(), parts[4].trim(), parts[5].trim());
+                cnUtil.insertUser(p);
+                p.setId(cnUtil.retrieveId(p));
+                data.add(p);
+                imported++;
+            }
+            setStatus("Imported " + imported + " record(s) from " + file.getName() + ".");
+        } catch (IOException e) {
+            setStatus("Import failed: " + e.getMessage());
+        }
+    }
+
+    @FXML
+    protected void exportCSV() {
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle("Export CSV");
+        chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV Files", "*.csv"));
+        chooser.setInitialFileName("students.csv");
+        File file = chooser.showSaveDialog(menuBar.getScene().getWindow());
+        if (file == null) return;
+        try (PrintWriter pw = new PrintWriter(new FileWriter(file))) {
+            pw.println("First Name,Last Name,Department,Major,Email,Image URL");
+            for (Person p : data) {
+                pw.printf("%s,%s,%s,%s,%s,%s%n",
+                        p.getFirstName(), p.getLastName(), p.getDepartment(),
+                        p.getMajor(), p.getEmail(), p.getImageURL());
+            }
+            setStatus("Exported " + data.size() + " record(s) to " + file.getName() + ".");
+        } catch (IOException e) {
+            setStatus("Export failed: " + e.getMessage());
         }
     }
 
