@@ -11,7 +11,9 @@ import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
@@ -74,6 +76,53 @@ public class DB_GUI_Controller implements Initializable {
             tv_major.setCellValueFactory(new PropertyValueFactory<>("major"));
             tv_email.setCellValueFactory(new PropertyValueFactory<>("email"));
             tv.setItems(data);
+            tv.setEditable(true);
+
+            tv_fn.setCellFactory(TextFieldTableCell.forTableColumn());
+            tv_fn.setOnEditCommit(e -> {
+                e.getRowValue().setFirstName(e.getNewValue());
+                cnUtil.editUser(e.getRowValue().getId(), e.getRowValue());
+                setStatus("Updated first name.");
+            });
+            tv_ln.setCellFactory(TextFieldTableCell.forTableColumn());
+            tv_ln.setOnEditCommit(e -> {
+                e.getRowValue().setLastName(e.getNewValue());
+                cnUtil.editUser(e.getRowValue().getId(), e.getRowValue());
+                setStatus("Updated last name.");
+            });
+            tv_department.setCellFactory(TextFieldTableCell.forTableColumn());
+            tv_department.setOnEditCommit(e -> {
+                e.getRowValue().setDepartment(e.getNewValue());
+                cnUtil.editUser(e.getRowValue().getId(), e.getRowValue());
+                setStatus("Updated department.");
+            });
+            tv_major.setCellFactory(ComboBoxTableCell.forTableColumn(
+                    FXCollections.observableArrayList(
+                            Arrays.stream(Major.values()).map(Major::name).toArray(String[]::new))));
+            tv_major.setOnEditCommit(e -> {
+                e.getRowValue().setMajor(e.getNewValue());
+                cnUtil.editUser(e.getRowValue().getId(), e.getRowValue());
+                setStatus("Updated major.");
+            });
+            tv_email.setCellFactory(TextFieldTableCell.forTableColumn());
+            tv_email.setOnEditCommit(e -> {
+                e.getRowValue().setEmail(e.getNewValue());
+                cnUtil.editUser(e.getRowValue().getId(), e.getRowValue());
+                setStatus("Updated email.");
+            });
+
+            tv.setRowFactory(tableView -> {
+                TableRow<Person> row = new TableRow<>();
+                row.setOnMouseClicked(event -> {
+                    if (event.getClickCount() == 1 && row.isEmpty()) {
+                        tv.getSelectionModel().clearSelection();
+                        clearForm();
+                        first_name.requestFocus();
+                    }
+                });
+                return row;
+            });
+
             major.setItems(FXCollections.observableArrayList(Major.values()));
             addBtn.setDisable(true);
             editBtn.setDisable(true);
