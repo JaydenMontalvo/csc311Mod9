@@ -69,6 +69,12 @@
     -fx-border-width: 2;
     -fx-stroke: white;
 }
+
+.error {
+    -fx-border-color: #ff4444;
+    -fx-border-width: 2;
+    -fx-border-radius: 3;
+}
 .table-view:focused .table-row-cell:selected .table-cell {
     -fx-background-color: lightBlue;
     -fx-text-fill: grey;

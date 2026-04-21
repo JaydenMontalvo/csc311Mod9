@@ -29,10 +29,18 @@ import java.util.ResourceBundle;
 
 public class DB_GUI_Controller implements Initializable {
 
+    private static final String FIRST_NAME_REGEX = "^[A-Za-z'-]{2,25}$";
+    private static final String LAST_NAME_REGEX  = "^[A-Za-z'-]{2,25}$";
+    private static final String DEPARTMENT_REGEX = "^[A-Za-z &-]{2,50}$";
+    private static final String EMAIL_REGEX      = "^[a-zA-Z0-9._%+\\-]+@[a-zA-Z0-9.\\-]+\\.[a-zA-Z]{2,6}$";
+    private static final String IMAGE_URL_REGEX  = "^(https?://(www\\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}([-a-zA-Z0-9()@:%_+.~#?&/=]*))?$";
+
     @FXML
     TextField first_name, last_name, department, email, imageURL;
     @FXML
     ComboBox<Major> major;
+    @FXML
+    private Button addBtn;
     @FXML
     ImageView img_view;
     @FXML
@@ -57,8 +65,40 @@ public class DB_GUI_Controller implements Initializable {
             tv_email.setCellValueFactory(new PropertyValueFactory<>("email"));
             tv.setItems(data);
             major.setItems(FXCollections.observableArrayList(Major.values()));
+            addBtn.setDisable(true);
+            first_name.textProperty().addListener((obs, o, n) -> validateForm());
+            last_name.textProperty().addListener((obs, o, n)  -> validateForm());
+            department.textProperty().addListener((obs, o, n) -> validateForm());
+            email.textProperty().addListener((obs, o, n)      -> validateForm());
+            imageURL.textProperty().addListener((obs, o, n)   -> validateForm());
+            major.valueProperty().addListener((obs, o, n)     -> validateForm());
         } catch (Exception e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    private void validateForm() {
+        boolean fnOk  = first_name.getText().matches(FIRST_NAME_REGEX);
+        boolean lnOk  = last_name.getText().matches(LAST_NAME_REGEX);
+        boolean deptOk = department.getText().matches(DEPARTMENT_REGEX);
+        boolean majOk = major.getValue() != null;
+        boolean emOk  = email.getText().matches(EMAIL_REGEX);
+        boolean urlOk  = imageURL.getText().matches(IMAGE_URL_REGEX);
+
+        setFieldError(first_name, !fnOk);
+        setFieldError(last_name,  !lnOk);
+        setFieldError(department, !deptOk);
+        setFieldError(email,      !emOk);
+        setFieldError(imageURL,   !urlOk);
+
+        addBtn.setDisable(!(fnOk && lnOk && deptOk && majOk && emOk && urlOk));
+    }
+
+    private void setFieldError(TextField field, boolean hasError) {
+        if (hasError) {
+            if (!field.getStyleClass().contains("error")) field.getStyleClass().add("error");
+        } else {
+            field.getStyleClass().remove("error");
         }
     }
 
@@ -81,6 +121,9 @@ public class DB_GUI_Controller implements Initializable {
         major.getSelectionModel().clearSelection();
         email.setText("");
         imageURL.setText("");
+        for (TextField f : new TextField[]{first_name, last_name, department, email, imageURL})
+            f.getStyleClass().remove("error");
+        addBtn.setDisable(true);
     }
 
     @FXML

@@ -46,6 +46,12 @@
     -fx-border-width: 2;
 }
 
+.error {
+    -fx-border-color: #cc0000;
+    -fx-border-width: 2;
+    -fx-border-radius: 3;
+}
+
 
 
 
