@@ -40,7 +40,9 @@ public class DB_GUI_Controller implements Initializable {
     @FXML
     ComboBox<Major> major;
     @FXML
-    private Button addBtn;
+    private Button addBtn, editBtn, deleteBtn;
+    @FXML
+    private MenuItem editItem, deleteItem;
     @FXML
     ImageView img_view;
     @FXML
@@ -66,12 +68,23 @@ public class DB_GUI_Controller implements Initializable {
             tv.setItems(data);
             major.setItems(FXCollections.observableArrayList(Major.values()));
             addBtn.setDisable(true);
+            editBtn.setDisable(true);
+            deleteBtn.setDisable(true);
+            editItem.setDisable(true);
+            deleteItem.setDisable(true);
             first_name.textProperty().addListener((obs, o, n) -> validateForm());
             last_name.textProperty().addListener((obs, o, n)  -> validateForm());
             department.textProperty().addListener((obs, o, n) -> validateForm());
             email.textProperty().addListener((obs, o, n)      -> validateForm());
             imageURL.textProperty().addListener((obs, o, n)   -> validateForm());
             major.valueProperty().addListener((obs, o, n)     -> validateForm());
+            tv.getSelectionModel().selectedItemProperty().addListener((obs, o, n) -> {
+                boolean selected = n != null;
+                editBtn.setDisable(!selected);
+                deleteBtn.setDisable(!selected);
+                editItem.setDisable(!selected);
+                deleteItem.setDisable(!selected);
+            });
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

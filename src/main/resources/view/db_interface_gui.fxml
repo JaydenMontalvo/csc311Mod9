@@ -33,8 +33,8 @@
                         </Menu>
                   <Menu mnemonicParsing="false" styleClass="menu_options" text="Edit">
                      <items>
-                        <MenuItem fx:id="editItem" mnemonicParsing="true" styleClass="menu_items" text="_Edit       Ctrl+E" />
-                        <MenuItem fx:id="deleteItem" mnemonicParsing="true" styleClass="menu_items" text="_Delete        Ctrl+D" />
+                        <MenuItem fx:id="editItem" mnemonicParsing="true" onAction="#editRecord" styleClass="menu_items" text="_Edit       Ctrl+E" />
+                        <MenuItem fx:id="deleteItem" mnemonicParsing="true" onAction="#deleteRecord" styleClass="menu_items" text="_Delete        Ctrl+D" />
                         <MenuItem fx:id="ClearItem" mnemonicParsing="false" styleClass="menu_items" text="Clea_r        Ctrl+R" />
                         <MenuItem fx:id="CopyItem" mnemonicParsing="false" styleClass="menu_items" text="_Copy       Ctrl+C" />
                      </items>
@@ -120,12 +120,12 @@
                                 <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                             </VBox.margin>
                         </Button>
-                        <Button mnemonicParsing="false" onAction="#deleteRecord" styleClass="db_btn" text="Delete">
+                        <Button fx:id="deleteBtn" mnemonicParsing="false" onAction="#deleteRecord" styleClass="db_btn" text="Delete">
                             <VBox.margin>
                                 <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                             </VBox.margin>
                         </Button>
-                        <Button mnemonicParsing="false" onAction="#editRecord" styleClass="db_btn" text="Edit">
+                        <Button fx:id="editBtn" mnemonicParsing="false" onAction="#editRecord" styleClass="db_btn" text="Edit">
                             <VBox.margin>
                                 <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                             </VBox.margin>
